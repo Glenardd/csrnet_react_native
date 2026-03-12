@@ -1,16 +1,18 @@
 import BackgroundOverlay from '@/components/backgroundOverlay';
-import GlobalSeparator from '@/components/globalSeparator';
-import { getTest } from '@/services/test.service';
+import ScrollableTest from '@/components/scrollabeTest';
+import { createTest, deleteTest, getCurrentUser, getTest } from '@/services/test.service';
+import { GetTestTypes } from '@/utils/dataTypes';
 import { responsiveSize, widthPadding } from '@/utils/responsiveSize';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function Records() {
 
-  const [tests, setTests] = useState<any[]>([]);
-  const [loadingTests, setLoadingTests] = useState(false);
+  const [tests, setTests] = useState<GetTestTypes[]>([]);
+  const [loadingTests, setLoadingTests] = useState<true | false>(false);
+  const [input, setInput] = useState<string>('')
 
   const router = useRouter();
 
@@ -25,36 +27,60 @@ export default function Records() {
     fetchTests();
   }, []);
 
+  //insert a test
+  const handleCreate = async () => {
+    if (!input.trim()) return
+
+    // close keyboard after submit
+    Keyboard.dismiss()
+
+    try {
+      const user = await getCurrentUser();
+
+      const newTest = await createTest({
+        test_name: input,
+        user_id: user?.id || ""
+      });
+
+      //clear  input after submission
+      setInput('')
+
+      const data = await getTest();
+      setTests(data || []);
+
+      console.log("Created:", newTest);
+    } catch (error) {
+      console.error("Failed to create test", error);
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteTest(id);
+
+      setTests(prev => prev.filter(test => test.id !== id));
+    } catch (error) {
+      console.error("Failed to delete test", error);
+    }
+  };
+
   return (
     <View style={{ marginTop: 20, alignItems: "center" }}>
       <View style={styles.row}>
-        <TextInput placeholder="Enter test name" style={styles.input} />
-        <Pressable onPress={() => {
-          console.log("added a project")
-        }}>
+        <TextInput
+          placeholder="Enter test name"
+          style={styles.input}
+          onChangeText={setInput}
+          value={input}
+        />
+        <Pressable onPress={handleCreate}>
           <MaterialIcons name="add-circle" size={responsiveSize(40)} color="white" />
         </Pressable>
       </View>
-      <BackgroundOverlay height={420} width={30}>
-        {loadingTests ? <View style={{justifyContent:"center", alignItems:"center", flex:1}}><Text>Loading...</Text></View> : (<FlatList
-          data={tests}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.listContainer}>
-              <Pressable onPress={()=>{
-                router.push({
-                  pathname:"/category",
-                  params: {test_id :item.id}
-                });
-              }}>
-                <GlobalSeparator paddingHorizontal={20} paddingVertical={15}>
-                  <Text>{item.test_name}</Text>
-                </GlobalSeparator>
-              </Pressable>
-            </View>
-          )}
-          style={{ marginTop: 20 }}
-        />)}
+      <BackgroundOverlay height={410} width={30}>
+        {loadingTests ? <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}><Text>Loading...</Text></View> : (
+          <ScrollableTest data={tests} centered={true} scrollHeight={380} marginVertical={15} onDelete={handleDelete}/>
+        )}
       </BackgroundOverlay>
     </View>
   );
@@ -67,8 +93,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContainer: {
-    paddingVertical:8,
-    paddingHorizontal:20,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
   },
   input: {
     width: widthPadding(55),
@@ -78,6 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    color: "white"
   },
   row: {
     flexDirection: 'row',
