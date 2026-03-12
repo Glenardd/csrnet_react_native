@@ -22,7 +22,7 @@ export default function AccuracyContent() {
     return (
         <View style={styles.container}>
             <BackgroundOverlay height={520} width={30}>
-                <ScrollableList date={listData} scrollHeight={510} centered={true} marginTop={15}/>
+                <ScrollableList data={listData} centered={true} scrollHeight={500} paddingVertical={15}/>
             </BackgroundOverlay>
         </View>
     )
