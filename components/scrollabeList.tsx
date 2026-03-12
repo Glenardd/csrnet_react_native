@@ -1,8 +1,8 @@
+import { COLORS } from "@/utils/colors";
 import { responsiveSize } from "@/utils/responsiveSize";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FlatList, Pressable, Text, View } from "react-native";
 import GlobalSeparator from "./globalSeparator";
-import { COLORS } from "@/utils/colors";
 
 interface DateTypes {
   id: string;
@@ -17,15 +17,15 @@ interface DateTypes {
 }
 
 export default function ScrollableList({
-  date,
-  scrollHeight = 410,
+  data,
   centered = false,
-  marginTop = 0,
+  paddingVertical = 0,
+  scrollHeight = 520,
 }: {
-  date: DateTypes[];
-  scrollHeight?: number;
-  centered?: boolean;
-  marginTop?: number;
+  data: DateTypes[];
+  centered?: boolean
+  paddingVertical: number
+  scrollHeight?: number
 }) {
 
   const formatDate = (dateString: string) => {
@@ -41,7 +41,7 @@ export default function ScrollableList({
   return (
     <View
       style={{
-        marginTop: responsiveSize(marginTop),
+        paddingVertical: responsiveSize(paddingVertical),
         flex: centered === false ? 1 : 0,
         justifyContent: centered === false ? "flex-start" : "center",
         alignItems: centered === false ? "flex-start" : "center",
@@ -49,7 +49,7 @@ export default function ScrollableList({
       }}
     >
       <FlatList
-        data={date}
+        data={data}
         renderItem={({ item }) => {
           return (
             <View style={{ paddingVertical: 8, paddingHorizontal: 20 }}>
@@ -160,7 +160,7 @@ export default function ScrollableList({
           );
         }}
         keyExtractor={(item) => item.id}
-        style={{ height: responsiveSize(scrollHeight) }}
+        style={{ maxHeight: responsiveSize(scrollHeight) }}
       />
     </View>
   );
