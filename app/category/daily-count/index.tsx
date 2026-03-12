@@ -39,7 +39,7 @@ export default function AccuracyContent() {
                         <Text style={{ fontSize: responsiveSize(16), color: filterType === "weekly" ? COLORS.primary : "black" }}>Weekly</Text>
                     </Pressable>
                 </View>
-                <ScrollableList date={listData} scrollHeight={510} centered={true} marginTop={15}/>
+                <ScrollableList data={listData} centered={true} scrollHeight={430} paddingVertical={0}/>
             </BackgroundOverlay>
         </View>
     );
