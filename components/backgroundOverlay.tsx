@@ -1,14 +1,14 @@
 import { responsiveSize, widthPadding } from "@/utils/responsiveSize";
 import { StyleSheet, View } from "react-native";
 
-export default function BackgroundOverlay({ children, height=30, width=420 }: { children: React.ReactNode, height?: number, width?: number }) {
+export default function BackgroundOverlay({ children, height=520, width=30 }: { children: React.ReactNode, height?: number, width?: number }) {
     const styles = StyleSheet.create({
         background: {
             backgroundColor: 'white',
             borderRadius: 8,
-            marginTop: 20,
+            marginTop: responsiveSize(20),
             width: widthPadding(width),
-            height: responsiveSize(height),
+            height: height === 0 ? "auto" : responsiveSize(height),
             overflow: "hidden",
         },
     });
