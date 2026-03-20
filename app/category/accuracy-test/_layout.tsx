@@ -1,15 +1,13 @@
 import { useAuthContext } from "@/hooks/use-auth-context";
 import { COLORS } from "@/utils/colors";
-import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 
-export default function CategoryLayout() {
+export default function AccuracyTestLayout() {
 
     const { session } = useAuthContext()
     if (!session) {
         return <Redirect href="/(auth)" />
     }
-
-    const { test_id } = useLocalSearchParams<{ test_id: string }>();
 
     return (
         <Stack>
