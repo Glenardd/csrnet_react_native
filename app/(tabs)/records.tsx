@@ -1,4 +1,5 @@
 import BackgroundOverlay from '@/components/backgroundOverlay';
+import LoadingScreen from '@/components/loadingScreen';
 import ScrollableTest from '@/components/scrollabeTest';
 import { createTest, deleteTest, getCurrentUser, getTest } from '@/services/test.service';
 import { GetTestTypes } from '@/utils/dataTypes';
@@ -13,6 +14,8 @@ export default function Records() {
   const [tests, setTests] = useState<GetTestTypes[]>([]);
   const [loadingTests, setLoadingTests] = useState<true | false>(false);
   const [input, setInput] = useState<string>('')
+  const [isLoadingInsert, setIsLoadingInsert] = useState<boolean>(false);
+  const [isEmpty, setIsEmpty] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -29,15 +32,20 @@ export default function Records() {
 
   //insert a test
   const handleCreate = async () => {
-    if (!input.trim()) return
+    if (!input.trim()) {
+      setIsEmpty(true)
+      return
+    }
 
     // close keyboard after submit
     Keyboard.dismiss()
 
+    setIsLoadingInsert(true)
+
     try {
       const user = await getCurrentUser();
 
-      const newTest = await createTest({
+      await createTest({
         test_name: input,
         user_id: user?.id || ""
       });
@@ -48,10 +56,11 @@ export default function Records() {
       const data = await getTest();
       setTests(data || []);
 
-      console.log("Created:", newTest);
     } catch (error) {
       console.error("Failed to create test", error);
     }
+
+    setIsLoadingInsert(false);
   }
 
   const handleDelete = async (id: number) => {
@@ -69,8 +78,13 @@ export default function Records() {
       <View style={styles.row}>
         <TextInput
           placeholder="Enter test name"
-          style={styles.input}
-          onChangeText={setInput}
+          placeholderTextColor={isEmpty ? "red" : "white"}
+          style={[styles.input, isEmpty ? { borderColor: "red" } : ""]}
+          onChangeText={(text) => {
+            setInput(text)
+            if (!text.trim()) setIsEmpty(true)
+            setIsEmpty(false)
+          }}
           value={input}
         />
         <Pressable onPress={handleCreate}>
@@ -79,9 +93,10 @@ export default function Records() {
       </View>
       <BackgroundOverlay height={410} width={30}>
         {loadingTests ? <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}><Text>Loading...</Text></View> : (
-          <ScrollableTest data={tests} centered={true} scrollHeight={380} marginVertical={15} onDelete={handleDelete}/>
+          <ScrollableTest data={tests} centered={true} scrollHeight={380} marginVertical={15} onDelete={handleDelete} />
         )}
       </BackgroundOverlay>
+      <LoadingScreen isLoading={isLoadingInsert} message="Processing..." />
     </View>
   );
 }
