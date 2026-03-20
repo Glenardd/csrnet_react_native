@@ -1,3 +1,4 @@
+import LoadingScreen from "@/components/loadingScreen";
 import ScreenWrapper from "@/components/screenWrapper";
 import GoogleSignInBtn from "@/components/social-auth-buttons/google/google-signin-button";
 import { useAuthContext } from "@/hooks/use-auth-context";
@@ -9,7 +10,7 @@ import { Text, View } from "react-native";
 
 export default function AuthContent() {
 
-    const { session } = useAuthContext()
+    const { session, isAuthenticating } = useAuthContext()
 
     if (session) {
         return <Redirect href="/(tabs)" />
@@ -23,6 +24,7 @@ export default function AuthContent() {
                     <Text style={{ fontWeight: "600", color: "white", fontSize: 30 }}>Micro-Detect</Text>
                 </View>
                 <GoogleSignInBtn />
+                <LoadingScreen isLoading={isAuthenticating} message="Please wait..."/>
             </View>
         </ScreenWrapper>
     )
