@@ -12,7 +12,7 @@ export default function CategoryLayout() {
 
     return (
         <ScreenWrapper backgroundColor={COLORS.primary}>
-            <Stack screenOptions={{headerShown:false}}>
+            <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="index"
                     options={{
                         headerShown: true,
