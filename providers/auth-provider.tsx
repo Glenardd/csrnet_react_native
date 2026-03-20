@@ -30,7 +30,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     initAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", { event: _event, session })
+      // console.log("Auth state changed:", { event: _event, session })
       setSession(session)
       setIsAuthenticating(false)
     })
