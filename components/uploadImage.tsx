@@ -45,10 +45,12 @@ export default function UploadImage() {
                 const resized = await ImageManipulator.manipulateAsync(
                     uri,
                     [{ resize: { width: 252, height: 252 } }],
-                    { base64: true, format: ImageManipulator.SaveFormat.JPEG }
+                    {
+                        base64: true,
+                        format: ImageManipulator.SaveFormat.JPEG,
+                        compress: 0.6
+                    }
                 );
-
-                console.log(uri)
 
                 // Run prediction
                 const prediction = await predictFromBase64(resized.base64!);
@@ -60,18 +62,19 @@ export default function UploadImage() {
                     return;
                 }
 
-                //if prediction is sucessful
-                if (prediction?.predictedCount) {
-                    setLoading(false);
-                    // Navigate to process screen
-                    router.push({
-                        pathname: "/process",
-                        params: {
-                            image_uri: uri,
-                            count: prediction.predictedCount
-                        }
-                    });
-                }
+                setLoading(false);
+
+                // Navigate to process screen
+                router.push({
+                    pathname: "/process",
+                    params: {
+                        image_uri: resized.uri,
+                        count: prediction.predictedCount,
+                        density_map: JSON.stringify(Array.from(prediction.normalizedMap)),
+                        map_width: prediction.mapWidth,
+                        map_height: prediction.mapHeight,
+                    }
+                });
             }
         }
     };
