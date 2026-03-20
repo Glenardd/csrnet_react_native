@@ -11,15 +11,14 @@ export default function CategoryContent() {
     return (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             <View style={{ flex: 1, marginTop: 20, justifyContent: "center" }}>
-                {[{title:'Daily Count', pathname:"/daily-count"}, {title:'Accuracy Test', pathname:"/accuracy-test"}].map((item, index) => (
+                {[{title:'Daily Count', pathname:"/category/daily-count"}, {title:'Accuracy Test', pathname:"/category/accuracy-test"}].map((item, index) => (
                     <View key={index} style={{
                         paddingVertical: 8,
                         paddingHorizontal: 20,
                     }}>
                         <Pressable onPress={() => {
-                            const pathname = item.pathname === "/daily-count" ? "/category/daily-count" : "/category/accuracy-test";
                             router.push({
-                                pathname: pathname,
+                                pathname: item.pathname as "/category/accuracy-test" | "/category/daily-count",
                                 params: { test_id: test_id }
                             })
                         }}>
