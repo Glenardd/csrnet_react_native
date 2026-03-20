@@ -1,41 +1,73 @@
-import { Buffer } from 'buffer';
-import { Asset } from 'expo-asset';
-import { loadTensorflowModel } from 'react-native-fast-tflite';
+import { AlphaType, ColorType, Skia } from '@shopify/react-native-skia';
+import * as FileSystem from 'expo-file-system/legacy';
+import { loadTensorflowModel, TensorflowModel } from 'react-native-fast-tflite';
 
-// Placeholder for densityMapToImage function
-// This function is not compatible with React Native and has been removed.
-// You need to implement a React Native compatible version using a library like 'react-native-canvas' or 'react-native-image-editor',
-// or handle the density map visualization on the backend or in a web environment.
-const densityMapToImage = async (flatDensityMap: Float32Array): Promise<string> => {
-    throw new Error('densityMapToImage is not implemented for React Native. Please use a compatible library or handle this on the backend.');
+let cachedModel: TensorflowModel | null = null;
+
+const MODEL_URL = 'https://drive.google.com/uc?export=download&id=1foHD_SxldpCD7kwwPOrn_51UwWBzCJUW';
+const MODEL_PATH = FileSystem.documentDirectory + 'csrnet.tflite';
+
+const getModel = async (): Promise<TensorflowModel> => {
+    if (cachedModel) return cachedModel;
+
+    const info = await FileSystem.getInfoAsync(MODEL_PATH);
+    if (!info.exists) {
+        console.log('Downloading model...');
+        await FileSystem.downloadAsync(MODEL_URL, MODEL_PATH);
+        console.log('Model downloaded!');
+    }
+
+    cachedModel = await loadTensorflowModel({ url: MODEL_PATH });
+    return cachedModel;
+};
+
+const loadRawPixels = async (base64: string): Promise<Float32Array> => {
+    const data = Skia.Data.fromBase64(base64);
+    const skImage = Skia.Image.MakeImageFromEncoded(data);
+    if (!skImage) throw new Error('Failed to decode image');
+
+    const pixels = skImage.readPixels(0, 0, {
+        width: 252,
+        height: 252,
+        colorType: ColorType.RGBA_8888,
+        alphaType: AlphaType.Unpremul,
+    });
+    if (!pixels) throw new Error('Failed to read pixels');
+
+    const float32 = new Float32Array(252 * 252 * 3);
+    let floatIdx = 0;
+    for (let i = 0; i < 252 * 252; i++) {
+        float32[floatIdx++] = pixels[i * 4 + 0] / 255.0; // R
+        float32[floatIdx++] = pixels[i * 4 + 1] / 255.0; // G
+        float32[floatIdx++] = pixels[i * 4 + 2] / 255.0; // B
+    }
+    return float32;
+};
+
+const normalizeDensityMap = (flatDensityMap: Float32Array): Float32Array => {
+    const max = Math.max(...flatDensityMap);
+    const min = Math.min(...flatDensityMap);
+    const range = max - min || 1;
+    return flatDensityMap.map((v) => (v - min) / range);
 };
 
 export const predictFromBase64 = async (base64: string) => {
     try {
-        // Load model
-        const asset = await Asset.loadAsync(require("@/assets/model/csrnet.tflite"));
-        const model = await loadTensorflowModel({ url: asset[0].localUri! });
+        const model = await getModel();
+        const float32 = await loadRawPixels(base64);
 
-        // Convert base64 to Float32Array using Buffer
-        const imgBuffer = Buffer.from(base64, 'base64');
-        const float32 = new Float32Array(252 * 252 * 3);
-        for (let i = 0; i < imgBuffer.length; i++) {
-            float32[i] = imgBuffer[i] / 255.0;
-        }
-
-        // Run prediction
         const output = await model.run([float32]);
-
-        // Flat density map
         const flatDensityMap = output[0] as Float32Array;
 
-        // Sum density map to get count
+        const mapWidth = Math.floor(252 / 8);
+        const mapHeight = Math.floor(252 / 8);
+
         const predictedCount = flatDensityMap.reduce((a, b) => a + b, 0);
+        const normalizedMap = normalizeDensityMap(flatDensityMap);
 
         console.log('Predicted Count:', predictedCount);
 
-        return { predictedCount, flatDensityMap };
-
+        return { predictedCount, normalizedMap, mapWidth, mapHeight };
     } catch (error) {
         console.error(error);
     }
