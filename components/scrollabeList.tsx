@@ -120,7 +120,7 @@ export default function ScrollableList({
                     flexDirection="row"
                     gap={responsiveSize(15)}
                   >
-                    <View>
+                    <View style={{ flex: 1 }}>
 
                       {/*  number of week */}
                       <Text style={{ fontWeight: "bold" }}>
@@ -150,6 +150,8 @@ export default function ScrollableList({
                       <Text
                         style={{
                           fontWeight: "bold",
+                          minWidth: 48,
+                          textAlign: "right",
                           color:
                             item.trend === "increase"
                               ? "#ff4d4d"
@@ -179,7 +181,7 @@ export default function ScrollableList({
                     flexDirection="row"
                     gap={responsiveSize(15)}
                   >
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Pressable onPress={async () => {
                         if (!item.original_img) return;
                         setShowImg(true);
@@ -219,6 +221,8 @@ export default function ScrollableList({
                       <Text
                         style={{
                           fontWeight: "bold",
+                          minWidth: 48,
+                          textAlign: "right",
                           color:
                             item.accuracy >= 75
                               ? "#4CAF50"
@@ -233,6 +237,8 @@ export default function ScrollableList({
                       <Text
                         style={{
                           fontWeight: "bold",
+                          minWidth: 48,
+                          textAlign: "right",
                           color:
                             item.trend === "increase"
                               ? "#ff4d4d"
@@ -246,7 +252,6 @@ export default function ScrollableList({
                     )}
 
                     <Pressable
-                      style={{ position: "absolute", top: 10, right: 10 }}
                       onPress={async () => {
                         setIsLoading(true);
                         await onDelete(item.id)

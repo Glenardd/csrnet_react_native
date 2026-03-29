@@ -31,7 +31,7 @@ export default function GlobalSeparator({
             borderStyle: "dashed",
             borderColor: "#b8bdc4ff",
             backgroundColor: "#ffffffff",
-            width: Dimensions.get("screen").width - 120,
+            width: "100%",
 
             flexDirection,
             justifyContent,
